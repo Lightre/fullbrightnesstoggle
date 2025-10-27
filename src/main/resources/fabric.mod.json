@@ -3,10 +3,14 @@
   "id": "fullbrightnesstoggle",
   "version": "${version}",
   "name": "FullBrightnessToggle",
-  "description": "Toggles full brightness.",
+  "description": "Easily toggle full brightness in Minecraft, instantly switching between normal and maximum brightness whenever you need.",
   "authors": [
     "Lightre"
   ],
+  "contact": {
+    "sources": "https://github.com/Lightre/fullbrightnesstoggle",
+    "issues": "https://github.com/Lightre/fullbrightnesstoggle/issues"
+  },
   "license": "ARR",
   "icon": "assets/fullbrightnesstoggle/icon.png",
   "environment": "client",
@@ -26,5 +30,9 @@
   },
   "suggests": {
     "another-mod": "*"
+  },
+  "custom": {
+    "modmenu": {
+    }
   }
 }
