@@ -22,10 +22,22 @@ public class FullBrightnessToggle implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            checkGammaAndToggleState(client.options);
+
             while (toggleKey.wasPressed()) {
                 toggleBrightness(client.options);
             }
         });
+    }
+
+    private void checkGammaAndToggleState(GameOptions options) {
+        SimpleOption<Double> gammaOption = options.getGamma();
+
+        if (gammaOption.getValue() < 10.0 && isFullBright) {
+            isFullBright = false;
+            System.out.println("Full Brightness kapatıldı. Manuel değişiklik algılandı.");
+            previousGamma = gammaOption.getValue();
+        }
     }
 
     private void toggleBrightness(GameOptions options) {
@@ -34,13 +46,12 @@ public class FullBrightnessToggle implements ClientModInitializer {
         if (!isFullBright) {
             previousGamma = gammaOption.getValue();
             gammaOption.setValue(10.0);
-            System.out.println(previousGamma); // mahmut
+            System.out.println("Full Brightness açıldı.");
         } else {
             gammaOption.setValue(previousGamma);
-            System.out.println(previousGamma); // mahmut
+            System.out.println("Full Brightness kapatıldı.");
         }
 
         isFullBright = !isFullBright;
     }
-
 }
