@@ -19,9 +19,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.fullbright.toggle", GLFW.GLFW_KEY_G, "category.fullbright"
-        ));
+        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.fullbright.toggle", GLFW.GLFW_KEY_G, "category.fullbright"));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             checkGammaAndToggleState(client.options);
@@ -48,12 +46,10 @@ public class FullBrightnessToggle implements ClientModInitializer {
         if (!isFullBright) {
             previousGamma = gammaOption.getValue();
             gammaOption.setValue(10.0);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE)
-                    .append(Text.literal("ON").formatted(Formatting.GREEN));
+            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("ON").formatted(Formatting.GREEN));
         } else {
             gammaOption.setValue(previousGamma);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE)
-                    .append(Text.literal("OFF").formatted(Formatting.RED));
+            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("OFF").formatted(Formatting.RED));
         }
 
         client.inGameHud.setOverlayMessage(message, false);

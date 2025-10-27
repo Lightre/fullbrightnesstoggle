@@ -29,11 +29,6 @@ public class GammaValidationMixin {
 
     @Inject(method = "codec", at = @At("RETURN"), cancellable = true)
     private void overrideCodec(CallbackInfoReturnable<Codec<Double>> cir) {
-        cir.setReturnValue(
-                Codec.DOUBLE.flatXmap(
-                        DataResult::success,
-                        DataResult::success
-                )
-        );
+        cir.setReturnValue(Codec.DOUBLE.flatXmap(DataResult::success, DataResult::success));
     }
 }
