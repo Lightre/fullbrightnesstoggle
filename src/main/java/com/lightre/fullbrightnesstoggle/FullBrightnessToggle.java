@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -25,7 +27,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
             checkGammaAndToggleState(client.options);
 
             while (toggleKey.wasPressed()) {
-                toggleBrightness(client.options);
+                toggleBrightness(client.options, client);
             }
         });
     }
@@ -35,23 +37,26 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
         if (gammaOption.getValue() < 10.0 && isFullBright) {
             isFullBright = false;
-            System.out.println("Full Brightness kapatıldı. Manuel değişiklik algılandı.");
             previousGamma = gammaOption.getValue();
         }
     }
 
-    private void toggleBrightness(GameOptions options) {
+    private void toggleBrightness(GameOptions options, net.minecraft.client.MinecraftClient client) {
         SimpleOption<Double> gammaOption = options.getGamma();
 
+        Text message;
         if (!isFullBright) {
             previousGamma = gammaOption.getValue();
             gammaOption.setValue(10.0);
-            System.out.println("Full Brightness açıldı.");
+            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE)
+                    .append(Text.literal("ON").formatted(Formatting.GREEN));
         } else {
             gammaOption.setValue(previousGamma);
-            System.out.println("Full Brightness kapatıldı.");
+            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE)
+                    .append(Text.literal("OFF").formatted(Formatting.RED));
         }
 
+        client.inGameHud.setOverlayMessage(message, false);
         isFullBright = !isFullBright;
     }
 }
