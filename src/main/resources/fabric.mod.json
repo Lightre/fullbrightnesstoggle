@@ -7,7 +7,7 @@
   "authors": [
     "Lightre"
   ],
-  "license": "CC0-1.0",
+  "license": "ARR",
   "icon": "assets/fullbrightnesstoggle/icon.png",
   "environment": "client",
   "entrypoints": {
