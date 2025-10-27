@@ -3,7 +3,7 @@
   "package": "com.lightre.fullbrightnesstoggle.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "GammaOptionBypassMixin"
+    "GammaValidationMixin"
   ],
   "client": [],
   "injectors": {
