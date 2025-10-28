@@ -6,10 +6,6 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-base {
-    archivesName = project.archives_base_name
-}
-
 repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
@@ -44,12 +40,17 @@ java {
 }
 
 jar {
-    inputs.property "archivesName", project.base.archivesName
+    archiveFileName = "${project.archives_base_name}-fabric-${project.mod_version}+mc${project.minecraft_version}-dev.jar"
 
     from("LICENSE") {
-        rename { "${it}_${inputs.properties.archivesName}" }
+        rename { "${it}_${project.archives_base_name}" }
     }
 }
+
+remapJar {
+    archiveFileName = "${project.archives_base_name}-fabric-${project.mod_version}+mc${project.minecraft_version}.jar"
+}
+
 
 publishing {
     publications {
