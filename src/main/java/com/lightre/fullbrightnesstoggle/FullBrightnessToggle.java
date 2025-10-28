@@ -9,6 +9,7 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public class FullBrightnessToggle implements ClientModInitializer {
@@ -19,7 +20,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.fullbright.toggle", GLFW.GLFW_KEY_G, "category.fullbright"));
+        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.fullbright.toggle", GLFW.GLFW_KEY_G, KeyBinding.Category.create(Identifier.of("fullbrightnesstoggle", "fullbright"))));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             checkGammaAndToggleState(client.options);
