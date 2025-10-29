@@ -62,9 +62,15 @@ jobs:
               echo "Minecraft version not found in $version_file"
               continue
             fi
-            folder=$(dirname "$version_file")
-            echo "Building for Minecraft $mc_version in folder: $folder"
-            ./gradlew -p "$folder" build || (echo "Build failed for $mc_version" && exit 1)
+            echo "Building for Minecraft $mc_version from $version_file"
+
+            tmp_props="build/tmp_gradle_$mc_version.properties"
+            mkdir -p build
+            cp gradle.properties "$tmp_props"
+            cat "$version_file" >> "$tmp_props"
+
+            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" -p . -PgradlePropertiesFile="$tmp_props" build || (echo "Build failed for $mc_version" && exit 1)
+
             echo "LAST_MC_VERSION=$mc_version" >> $GITHUB_ENV
           done
 
