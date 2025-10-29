@@ -54,28 +54,25 @@ jobs:
           version_files=$(echo "$version_files" | tr '\n' ' ')
           echo "version_files=$version_files" >> $GITHUB_OUTPUT
 
-      - name: Build and Upload Artifacts
+      - name: Build All Versions
         run: |
           for version_file in ${{ steps.find_versions.outputs.version_files }}; do
-            version=$(grep -oP '(?<=^version=).*' "$version_file" || true)
-            if [ -z "$version" ]; then
-              echo "Version not found in $version_file"
+            mc_version=$(grep -oP '(?<=^minecraft_version\s*=\s*).*' "$version_file" || true)
+            if [ -z "$mc_version" ]; then
+              echo "Minecraft version not found in $version_file"
               continue
             fi
             folder=$(dirname "$version_file")
-            echo "Building version: $version in folder: $folder"
-            cd "$folder"
-            ./gradlew build || (echo "Build failed for $version" && exit 1)
-            echo "VERSION=$version" >> $GITHUB_ENV
-            cd - >/dev/null
+            echo "🏗️ Building for Minecraft $mc_version in folder: $folder"
 
-            echo "Uploading artifact: fullbrightnesstoggle-v$version"
-            echo "::set-output name=artifact_name::fullbrightnesstoggle-v$version"
-            echo "::set-output name=artifact_path::$folder/build/libs/*"
+            ./gradlew -p "$folder" build || (echo "Build failed for $mc_version" && exit 1)
+
+            echo "LAST_MC_VERSION=$mc_version" >> $GITHUB_ENV
           done
 
-      - name: Upload Artifacts
+      - name: Upload Built JARs
         uses: actions/upload-artifact@v4
         with:
-          name: fullbrightnesstoggle-v${{ env.VERSION }}
-          path: build/libs/*
+          name: fullbrightnesstoggle-mc${{ env.LAST_MC_VERSION }}
+          path: versions/**/build/libs/*.jar
+          if-no-files-found: warn
