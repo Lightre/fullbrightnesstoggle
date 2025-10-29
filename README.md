@@ -17,8 +17,6 @@ A tiny **Fabric** mod that makes your Minecraft ***hella bright*** whenever you 
 
 </div>
 
----
-
 ## Features
 
 - Flip full brightness on/off with a key.
@@ -38,8 +36,6 @@ Hit the key (default: G) and boom, everything’s bright. Hit it again and chill
 ## License
 
 This project is licensed under the [All Rights Reserved license][hey_license_url].
-
----
 
 [downloads_img]: https://img.shields.io/modrinth/dt/fullbrightnesstoggle?color=default&logo=modrinth
 
