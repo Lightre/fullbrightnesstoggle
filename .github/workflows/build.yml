@@ -56,7 +56,6 @@ jobs:
 
       - name: Build and Upload Each Version
         run: |
-          mkdir -p build
           for version_file in ${{ steps.find_versions.outputs.version_files }}; do
             mc_version=$(grep -oP '(?<=^minecraft_version\s*=\s*).*' "$version_file" || true)
             if [ -z "$mc_version" ]; then
@@ -72,19 +71,12 @@ jobs:
             ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" \
                       -p . \
                       -PgradlePropertiesFile="$tmp_props" \
-                      build \
-                      -DbuildDir="build/build_$mc_version" || (echo "Build failed for $mc_version" && exit 1)
+                      build || (echo "Build failed for $mc_version" && exit 1)
 
-            jar_path="build/build_$mc_version/libs/*.jar"
-            if compgen -G "$jar_path" > /dev/null; then
-              echo "Uploading JARs for $mc_version"
-              gh upload-artifact --name "fullbrightnesstoggle-mc$mc_version" --path $jar_path
-            else
-              echo "No JARs found for $mc_version"
-            fi
+            echo "Uploading artifact for $mc_version"
+            - uses: actions/upload-artifact@v4
+              with:
+                name: fullbrightnesstoggle-mc${mc_version}
+                path: build/libs/*.jar
+                if-no-files-found: error
           done
-
-      - name: List all built files
-        run: |
-          echo "Built JAR files:"
-          find build -type f -name "*.jar" || echo "No jars found!"
