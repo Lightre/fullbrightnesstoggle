@@ -1,15 +1,19 @@
 name: Build Multiple Versions
+
 on:
   pull_request:
     paths:
       - 'versions/**/gradle.properties'
+      - 'gradle.properties'
   push:
     paths:
       - 'versions/**/gradle.properties'
+      - 'gradle.properties'
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -20,26 +24,51 @@ jobs:
           java-version: '21'
           distribution: 'microsoft'
 
-      - name: Find all gradle.properties files in version folders
+      - name: Find gradle.properties files
         id: find_versions
         run: |
-          version_folders=$(find versions/* -name "gradle.properties")
-          echo "Found version folders: $version_folders"
-          echo "::set-output name=version_folders::$version_folders"
+          if [ -d "versions" ]; then
+            version_files=$(find versions/* -name "gradle.properties" || true)
+            if [ -z "$version_files" ]; then
+              if [ -f "gradle.properties" ]; then
+                version_files="gradle.properties"
+              else
+                echo "No gradle.properties found"
+                exit 1
+              fi
+            fi
+          else
+            if [ -f "gradle.properties" ]; then
+              version_files="gradle.properties"
+            else
+              echo "No gradle.properties found"
+              exit 1
+            fi
+          fi
+          echo "version_files=$version_files" >> $GITHUB_OUTPUT
 
       - name: Build and Upload Artifacts
         run: |
-          for version_folder in ${{ steps.find_versions.outputs.version_folders }}; do
-            version=$(grep -oP '(?<=^version=).*' $version_folder)
+          for version_file in ${{ steps.find_versions.outputs.version_files }}; do
+            version=$(grep -oP '(?<=^version=).*' $version_file || true)
             if [ -z "$version" ]; then
-              echo "Version not found in $version_folder"
+              echo "Version not found in $version_file"
               continue
             fi
-            echo "Building version: $version"
-            cd $version_folder/..
-            ./gradlew build
-            path="build/libs/*"
-            artifact_name="fullbrightnesstoggle-v$version"
-            echo "Uploading artifact: $artifact_name"
-            gh actions upload-artifact --name "$artifact_name" --path "$path"
+            folder=$(dirname "$version_file")
+            echo "Building version: $version in folder: $folder"
+            cd "$folder"
+            ./gradlew build || (echo "Build failed for $version" && exit 1)
+            echo "VERSION=$version" >> $GITHUB_ENV
+            cd - >/dev/null
+
+            echo "Uploading artifact: fullbrightnesstoggle-v$version"
+            echo "::set-output name=artifact_name::fullbrightnesstoggle-v$version"
+            echo "::set-output name=artifact_path::$folder/build/libs/*"
           done
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fullbrightnesstoggle-v${{ env.VERSION }}
+          path: build/libs/*
