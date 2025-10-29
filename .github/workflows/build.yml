@@ -3,12 +3,16 @@ name: Build Multiple Versions
 on:
   pull_request:
     paths:
+      - 'src/**'
       - 'versions/**/gradle.properties'
       - 'gradle.properties'
+      - 'build.gradle'
   push:
     paths:
+      - 'src/**'
       - 'versions/**/gradle.properties'
       - 'gradle.properties'
+      - 'build.gradle'
 
 jobs:
   build:
