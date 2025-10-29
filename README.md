@@ -8,7 +8,7 @@
 
 # Full Brightness Toggle
 
-A tiny **Fabric** mod that makes your Minecraft ***hella bright*** whenever you feel like it.
+A tiny **Fabric** mod that makes your Minecraft **hella bright** whenever you feel like it.
 
 ![Minecraft Version][minecraft_version_img]
 ![Downloads][downloads_img]
