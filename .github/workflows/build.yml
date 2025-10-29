@@ -3,12 +3,14 @@ name: Build Multiple Versions
 on:
   pull_request:
     paths:
+      - '.github/**'
       - 'src/**'
       - 'versions/**/gradle.properties'
       - 'gradle.properties'
       - 'build.gradle'
   push:
     paths:
+      - '.github/**'
       - 'src/**'
       - 'versions/**/gradle.properties'
       - 'gradle.properties'
@@ -49,12 +51,13 @@ jobs:
               exit 1
             fi
           fi
+          version_files=$(echo "$version_files" | tr '\n' ' ')
           echo "version_files=$version_files" >> $GITHUB_OUTPUT
 
       - name: Build and Upload Artifacts
         run: |
           for version_file in ${{ steps.find_versions.outputs.version_files }}; do
-            version=$(grep -oP '(?<=^version=).*' $version_file || true)
+            version=$(grep -oP '(?<=^version=).*' "$version_file" || true)
             if [ -z "$version" ]; then
               echo "Version not found in $version_file"
               continue
