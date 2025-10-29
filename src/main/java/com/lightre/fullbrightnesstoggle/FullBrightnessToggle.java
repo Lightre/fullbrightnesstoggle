@@ -60,5 +60,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
         client.inGameHud.setOverlayMessage(message, false);
         isFullBright = !isFullBright;
+
+        client.options.write();
     }
 }
