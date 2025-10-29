@@ -39,7 +39,6 @@ jobs:
               if [ -f "gradle.properties" ]; then
                 version_files="gradle.properties"
               else
-                echo "No gradle.properties found"
                 exit 1
               fi
             fi
@@ -47,7 +46,6 @@ jobs:
             if [ -f "gradle.properties" ]; then
               version_files="gradle.properties"
             else
-              echo "No gradle.properties found"
               exit 1
             fi
           fi
@@ -57,26 +55,21 @@ jobs:
       - name: Build and Upload Each Version
         run: |
           for version_file in ${{ steps.find_versions.outputs.version_files }}; do
-            mc_version=$(grep -oP '(?<=^minecraft_version\s*=\s*).*' "$version_file" || true)
+            mc_version=$(grep '^minecraft_version=' "$version_file" | cut -d '=' -f2 | tr -d ' ')
             if [ -z "$mc_version" ]; then
-              echo "Minecraft version not found in $version_file"
               continue
             fi
-            echo "Building for Minecraft $mc_version from $version_file"
-
             tmp_props="build/tmp_gradle_$mc_version.properties"
+            mkdir -p build
             cp gradle.properties "$tmp_props"
             cat "$version_file" >> "$tmp_props"
-
-            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" \
-                      -p . \
-                      -PgradlePropertiesFile="$tmp_props" \
-                      build || (echo "Build failed for $mc_version" && exit 1)
-
-            echo "Uploading artifact for $mc_version"
-            - uses: actions/upload-artifact@v4
-              with:
-                name: fullbrightnesstoggle-mc${mc_version}
-                path: build/libs/*.jar
-                if-no-files-found: error
+            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" -p . -PgradlePropertiesFile="$tmp_props" build || exit 1
+            echo "LAST_MC_VERSION=$mc_version" >> $GITHUB_ENV
           done
+
+      - name: Upload Built JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: fullbrightnesstoggle-mc${{ env.LAST_MC_VERSION }}
+          path: build/libs/*.jar
+          if-no-files-found: error
