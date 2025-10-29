@@ -1,30 +1,74 @@
-# Automatically build the project and run any configured tests for every push
-# and submitted pull request. This can help catch issues that only occur on
-# certain platforms or Java versions, and provides a first line of defence
-# against bad commits.
+name: Build Multiple Versions
 
-name: build
-on: [pull_request, push]
+on:
+  pull_request:
+    paths:
+      - 'versions/**/gradle.properties'
+      - 'gradle.properties'
+  push:
+    paths:
+      - 'versions/**/gradle.properties'
+      - 'gradle.properties'
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+
     steps:
-      - name: checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: validate gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
-      - name: setup jdk
+
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'microsoft'
-      - name: make gradle wrapper executable
-        run: chmod +x ./gradlew
-      - name: build
-        run: ./gradlew build
-      - name: capture build artifacts
+
+      - name: Find gradle.properties files
+        id: find_versions
+        run: |
+          if [ -d "versions" ]; then
+            version_files=$(find versions/* -name "gradle.properties" || true)
+            if [ -z "$version_files" ]; then
+              if [ -f "gradle.properties" ]; then
+                version_files="gradle.properties"
+              else
+                echo "No gradle.properties found"
+                exit 1
+              fi
+            fi
+          else
+            if [ -f "gradle.properties" ]; then
+              version_files="gradle.properties"
+            else
+              echo "No gradle.properties found"
+              exit 1
+            fi
+          fi
+          echo "version_files=$version_files" >> $GITHUB_OUTPUT
+
+      - name: Build and Upload Artifacts
+        run: |
+          for version_file in ${{ steps.find_versions.outputs.version_files }}; do
+            version=$(grep -oP '(?<=^version=).*' $version_file || true)
+            if [ -z "$version" ]; then
+              echo "Version not found in $version_file"
+              continue
+            fi
+            folder=$(dirname "$version_file")
+            echo "Building version: $version in folder: $folder"
+            cd "$folder"
+            ./gradlew build || (echo "Build failed for $version" && exit 1)
+            echo "VERSION=$version" >> $GITHUB_ENV
+            cd - >/dev/null
+
+            echo "Uploading artifact: fullbrightnesstoggle-v$version"
+            echo "::set-output name=artifact_name::fullbrightnesstoggle-v$version"
+            echo "::set-output name=artifact_path::$folder/build/libs/*"
+          done
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
-          path: build/libs/
+          name: fullbrightnesstoggle-v${{ env.VERSION }}
+          path: build/libs/*
