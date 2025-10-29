@@ -33,43 +33,55 @@ jobs:
       - name: Find gradle.properties files
         id: find_versions
         run: |
+          version_files=""
           if [ -d "versions" ]; then
             version_files=$(find versions/* -name "gradle.properties" || true)
-            if [ -z "$version_files" ]; then
-              if [ -f "gradle.properties" ]; then
-                version_files="gradle.properties"
-              else
-                exit 1
-              fi
-            fi
-          else
-            if [ -f "gradle.properties" ]; then
-              version_files="gradle.properties"
-            else
-              exit 1
-            fi
+          fi
+          if [ -z "$version_files" ] && [ -f "gradle.properties" ]; then
+            version_files="gradle.properties"
+          fi
+          if [ -z "$version_files" ]; then
+            echo "No gradle.properties files found!"
+            exit 1
           fi
           version_files=$(echo "$version_files" | tr '\n' ' ')
           echo "version_files=$version_files" >> $GITHUB_OUTPUT
 
-      - name: Build and Upload Each Version
+      - name: Build Each Version
+        id: build_versions
         run: |
+          mkdir -p build
+          built_versions=""
           for version_file in ${{ steps.find_versions.outputs.version_files }}; do
             mc_version=$(grep '^minecraft_version=' "$version_file" | cut -d '=' -f2 | tr -d ' ')
             if [ -z "$mc_version" ]; then
+              echo "Skipping $version_file because minecraft_version not found"
               continue
             fi
+
             tmp_props="build/tmp_gradle_$mc_version.properties"
-            mkdir -p build
             cp gradle.properties "$tmp_props"
             cat "$version_file" >> "$tmp_props"
-            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" -p . -PgradlePropertiesFile="$tmp_props" build || exit 1
-            echo "LAST_MC_VERSION=$mc_version" >> $GITHUB_ENV
-          done
 
-      - name: Upload Built JARs
-        uses: actions/upload-artifact@v4
-        with:
-          name: fullbrightnesstoggle-mc${{ env.LAST_MC_VERSION }}
-          path: build/libs/*.jar
-          if-no-files-found: error
+            echo "Building version $mc_version with $tmp_props..."
+            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" -p . -PgradlePropertiesFile="$tmp_props" build || exit 1
+
+            built_versions="$built_versions $mc_version"
+          done
+          echo "built_versions=$built_versions" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifacts for Each Version
+        run: |
+          for mc_version in ${{ steps.build_versions.outputs.built_versions }}; do
+            echo "Uploading artifact for Minecraft version $mc_version..."
+            gh-actions-upload() {
+              name=$1
+              path=$2
+              npx @actions/artifact upload --name "$name" --path "$path" || exit 1
+            }
+
+            # Fallback using upload-artifact action if npx not available
+            mkdir -p tmp_upload
+            cp build/libs/*.jar tmp_upload/
+            gh-actions-upload "fullbrightnesstoggle-mc$mc_version" "tmp_upload/*"
+          done
