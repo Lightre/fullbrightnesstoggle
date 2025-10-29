@@ -3,17 +3,26 @@ plugins {
     id 'maven-publish'
 }
 
-def mcVer = project.findProperty("mcVer") ?: "1.21"
-def versionPropsFile = file("versions/${mcVer}/gradle.properties")
-
-if (!versionPropsFile.exists()) {
-    throw new GradleException("versions/${mcVer}/gradle.properties not found!")
-}
-
+def mcVer = project.findProperty("mcVer")
 def versionProps = new Properties()
-versionPropsFile.withInputStream { versionProps.load(it) }
-versionProps.each { key, value -> project.ext[key.toString()] = value.toString()
+
+if (mcVer != null) {
+    def versionPropsFile = file("versions/${mcVer}/gradle.properties")
+    if (versionPropsFile.exists()) {
+        versionPropsFile.withInputStream { versionProps.load(it) }
+    } else {
+        throw new GradleException("versions/${mcVer}/gradle.properties not found!")
+    }
+} else {
+    def rootPropsFile = file("gradle.properties")
+    if (rootPropsFile.exists()) {
+        rootPropsFile.withInputStream { versionProps.load(it) }
+    } else {
+        throw new GradleException("Root gradle.properties not found!")
+    }
 }
+
+versionProps.each { key, value -> project.ext[key.toString()] = value.toString() }
 
 version = project.mod_version
 group = project.maven_group
