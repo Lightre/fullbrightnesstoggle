@@ -63,16 +63,19 @@ jobs:
               continue
             fi
             folder=$(dirname "$version_file")
-            echo "🏗️ Building for Minecraft $mc_version in folder: $folder"
-
+            echo "Building for Minecraft $mc_version in folder: $folder"
             ./gradlew -p "$folder" build || (echo "Build failed for $mc_version" && exit 1)
-
             echo "LAST_MC_VERSION=$mc_version" >> $GITHUB_ENV
           done
+
+      - name: Check Built Files
+        run: |
+          echo "Built JAR files found:"
+          find build/libs -type f -name "*.jar" || echo "No jars found!"
 
       - name: Upload Built JARs
         uses: actions/upload-artifact@v4
         with:
           name: fullbrightnesstoggle-mc${{ env.LAST_MC_VERSION }}
-          path: versions/**/build/libs/*.jar
-          if-no-files-found: warn
+          path: build/libs/*.jar
+          if-no-files-found: error
