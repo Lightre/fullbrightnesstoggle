@@ -32,10 +32,15 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
     private void checkGammaAndToggleState(GameOptions options) {
         SimpleOption<Double> gammaOption = options.getGamma();
+        double currentGamma = gammaOption.getValue();
+        boolean gammaIsFull = currentGamma >= 10.0;
 
-        if (gammaOption.getValue() < 10.0 && isFullBright) {
+        if (gammaIsFull && !isFullBright) {
+            isFullBright = true;
+            previousGamma = 1.0;
+        } else if (!gammaIsFull && isFullBright) {
             isFullBright = false;
-            previousGamma = gammaOption.getValue();
+            previousGamma = currentGamma;
         }
     }
 
@@ -54,5 +59,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
         client.inGameHud.setOverlayMessage(message, false);
         isFullBright = !isFullBright;
+
+        client.options.write();
     }
 }
