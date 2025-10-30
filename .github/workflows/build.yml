@@ -1,87 +1,55 @@
-name: Build Multiple Versions
+name: build
 
-on:
-  pull_request:
-    paths:
-      - '.github/**'
-      - 'src/**'
-      - 'versions/**/gradle.properties'
-      - 'gradle.properties'
-      - 'build.gradle'
-  push:
-    paths:
-      - '.github/**'
-      - 'src/**'
-      - 'versions/**/gradle.properties'
-      - 'gradle.properties'
-      - 'build.gradle'
+on: [ push, pull_request ]
 
 jobs:
   build:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'microsoft'
 
-      - name: Find gradle.properties files
-        id: find_versions
-        run: |
-          version_files=""
-          if [ -d "versions" ]; then
-            version_files=$(find versions/* -name "gradle.properties" || true)
-          fi
-          if [ -z "$version_files" ] && [ -f "gradle.properties" ]; then
-            version_files="gradle.properties"
-          fi
-          if [ -z "$version_files" ]; then
-            echo "No gradle.properties files found!"
-            exit 1
-          fi
-          version_files=$(echo "$version_files" | tr '\n' ' ')
-          echo "version_files=$version_files" >> $GITHUB_OUTPUT
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
 
-      - name: Build Each Version
-        id: build_versions
+      - name: Build all versions
         run: |
-          mkdir -p build
-          built_versions=""
-          for version_file in ${{ steps.find_versions.outputs.version_files }}; do
-            mc_version=$(grep '^minecraft_version=' "$version_file" | cut -d '=' -f2 | tr -d ' ')
-            if [ -z "$mc_version" ]; then
-              echo "Skipping $version_file because minecraft_version not found"
-              continue
+          echo "Scanning version directories..."
+          ROOT_PROPS="gradle.properties"
+
+          cp "$ROOT_PROPS" "$ROOT_PROPS.bak"
+
+          for version_dir in versions/*; do
+            if [ -d "$version_dir" ] && [ -f "$version_dir/gradle.properties" ]; then
+              echo "Version found: $version_dir"
+              echo "Merging gradle.properties..."
+
+              cat "$ROOT_PROPS.bak" > "$ROOT_PROPS"
+              echo "" >> "$ROOT_PROPS"
+              cat "$version_dir/gradle.properties" >> "$ROOT_PROPS"
+
+              echo "Starting build for: $version_dir"
+              ./gradlew clean build --no-daemon
+
+              echo "Build completed for: $version_dir"
+              echo ""
             fi
-
-            tmp_props="build/tmp_gradle_$mc_version.properties"
-            cp gradle.properties "$tmp_props"
-            cat "$version_file" >> "$tmp_props"
-
-            echo "Building version $mc_version with $tmp_props..."
-            ./gradlew -Dorg.gradle.project.gradleUserHomeDir="$HOME/.gradle" -p . -PgradlePropertiesFile="$tmp_props" build || exit 1
-
-            built_versions="$built_versions $mc_version"
           done
-          echo "built_versions=$built_versions" >> $GITHUB_OUTPUT
 
-      - name: Upload Artifacts for Each Version
-        run: |
-          for mc_version in ${{ steps.build_versions.outputs.built_versions }}; do
-            echo "Uploading artifact for Minecraft version $mc_version..."
-            gh-actions-upload() {
-              name=$1
-              path=$2
-              npx @actions/artifact upload --name "$name" --path "$path" || exit 1
-            }
+          mv "$ROOT_PROPS.bak" "$ROOT_PROPS"
 
-            # Fallback using upload-artifact action if npx not available
-            mkdir -p tmp_upload
-            cp build/libs/*.jar tmp_upload/
-            gh-actions-upload "fullbrightnesstoggle-mc$mc_version" "tmp_upload/*"
-          done
+      - name: Capture build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: FullBrightnessToggle-Builds
+          path: build/libs/
