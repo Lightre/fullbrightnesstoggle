@@ -52,6 +52,7 @@ jobs:
 
           mkdir -p build_versions
 
+          first_build=true
           for version_dir in versions/*; do
             if [ -d "$version_dir" ] && [ -f "$version_dir/gradle.properties" ]; then
               echo "--------------------------------------------"
@@ -62,7 +63,12 @@ jobs:
               echo "" >> "$ROOT_PROPS"
               cat "$version_dir/gradle.properties" >> "$ROOT_PROPS"
 
-              ./gradlew clean build --no-daemon --stacktrace
+              if [ "$first_build" = true ]; then
+                ./gradlew clean build --no-daemon --stacktrace
+                first_build=false
+              else
+                ./gradlew build --no-daemon --stacktrace
+              fi
 
               version_name=$(basename "$version_dir")
               mkdir -p "build_versions/$version_name"
