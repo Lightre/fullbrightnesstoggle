@@ -1,4 +1,4 @@
-name: build
+name: Build
 
 on: [ push, pull_request ]
 
@@ -19,37 +19,74 @@ jobs:
           java-version: '21'
           distribution: 'microsoft'
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build all versions
+      - name: Detect gradle.properties source
+        id: detect
         run: |
-          echo "Scanning version directories..."
-          ROOT_PROPS="gradle.properties"
+          if [ -d "versions" ] && [ "$(ls -A versions)" ]; then
+            echo "versions folder detected and not empty."
+            echo "found_versions=true" >> $GITHUB_OUTPUT
+          else
+            echo "no versions folder found, using root directory."
+            echo "found_versions=false" >> $GITHUB_OUTPUT
+          fi
 
+      - name: Build all versioned modules
+        if: steps.detect.outputs.found_versions == 'true'
+        run: |
+          echo "Backing up root gradle.properties..."
+          ROOT_PROPS="gradle.properties"
           cp "$ROOT_PROPS" "$ROOT_PROPS.bak"
+
+          mkdir -p build_versions
 
           for version_dir in versions/*; do
             if [ -d "$version_dir" ] && [ -f "$version_dir/gradle.properties" ]; then
-              echo "Version found: $version_dir"
-              echo "Merging gradle.properties..."
+              echo "--------------------------------------------"
+              echo "Building for version: $version_dir"
+              echo "--------------------------------------------"
 
               cat "$ROOT_PROPS.bak" > "$ROOT_PROPS"
               echo "" >> "$ROOT_PROPS"
               cat "$version_dir/gradle.properties" >> "$ROOT_PROPS"
 
-              echo "Starting build for: $version_dir"
-              ./gradlew clean build --no-daemon
+              ./gradlew clean build --no-daemon --stacktrace
 
-              echo "Build completed for: $version_dir"
+              version_name=$(basename "$version_dir")
+              mkdir -p "build_versions/$version_name"
+              cp -r build/libs/* "build_versions/$version_name/" || true
+
+              echo "Build completed for: $version_name"
               echo ""
             fi
           done
 
           mv "$ROOT_PROPS.bak" "$ROOT_PROPS"
 
-      - name: Capture build artifacts
+      - name: Build single root version
+        if: steps.detect.outputs.found_versions == 'false'
+        run: |
+          echo "--------------------------------------------"
+          echo "No versions folder detected — building root project."
+          echo "--------------------------------------------"
+          ./gradlew clean build --no-daemon --stacktrace
+          mkdir -p build_versions/root
+          cp -r build/libs/* build_versions/root/ || true
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: FullBrightnessToggle-Builds
-          path: build/libs/
+          path: build_versions/
