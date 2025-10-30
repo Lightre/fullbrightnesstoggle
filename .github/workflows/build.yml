@@ -46,7 +46,6 @@ jobs:
       - name: Build all versioned modules
         if: steps.detect.outputs.found_versions == 'true'
         run: |
-          echo "Backing up root gradle.properties..."
           ROOT_PROPS="gradle.properties"
           cp "$ROOT_PROPS" "$ROOT_PROPS.bak"
 
@@ -62,6 +61,8 @@ jobs:
               cat "$ROOT_PROPS.bak" > "$ROOT_PROPS"
               echo "" >> "$ROOT_PROPS"
               cat "$version_dir/gradle.properties" >> "$ROOT_PROPS"
+
+              rm -rf build/libs/*
 
               if [ "$first_build" = true ]; then
                 ./gradlew clean build --no-daemon --stacktrace
@@ -84,9 +85,7 @@ jobs:
       - name: Build single root version
         if: steps.detect.outputs.found_versions == 'false'
         run: |
-          echo "--------------------------------------------"
-          echo "No versions folder detected — building root project."
-          echo "--------------------------------------------"
+          rm -rf build/libs/*
           ./gradlew clean build --no-daemon --stacktrace
           mkdir -p build_versions/root
           cp -r build/libs/* build_versions/root/ || true
