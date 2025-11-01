@@ -1,6 +1,22 @@
-name: Build
+name: Build # Made by Lightre
 
-on: [ push, pull_request ]
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'versions/**'
+      - '.github/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'versions/**'
+      - '.github/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
 
 jobs:
   build:
