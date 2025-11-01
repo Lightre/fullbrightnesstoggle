@@ -11,6 +11,7 @@
 A tiny **Fabric** mod that makes your Minecraft ***hella bright*** whenever you feel like it.
 
 ![Minecraft Version][minecraft_version_img]
+
 ![Downloads][downloads_img]
 [![Releases][releases_img]][releases_url]
 [![License][hey_license_img]][hey_license_url]
@@ -47,4 +48,4 @@ This project is licensed under the [All Rights Reserved license][hey_license_url
 
 [hey_license_url]: https://github.com/Lightre/fullbrightnesstoggle/blob/main/LICENSE
 
-[minecraft_version_img]: https://img.shields.io/badge/minecraft-1.21x-%231bc481
+[minecraft_version_img]: https://img.shields.io/badge/minecraft-1.21x%201.20x%201.19x-%231bc481
