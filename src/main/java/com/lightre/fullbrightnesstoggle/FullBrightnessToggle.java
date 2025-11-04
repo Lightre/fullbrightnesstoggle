@@ -4,8 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -31,8 +32,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
     }
 
     private void checkGammaAndToggleState(GameOptions options) {
-        SimpleOption<Double> gammaOption = options.getGamma();
-        double currentGamma = gammaOption.getValue();
+        double currentGamma = options.gamma;
         boolean gammaIsFull = currentGamma >= 10.0;
 
         if (gammaIsFull && !isFullBright) {
@@ -45,16 +45,15 @@ public class FullBrightnessToggle implements ClientModInitializer {
     }
 
     private void toggleBrightness(GameOptions options, net.minecraft.client.MinecraftClient client) {
-        SimpleOption<Double> gammaOption = options.getGamma();
-
         Text message;
         if (!isFullBright) {
-            previousGamma = gammaOption.getValue();
-            gammaOption.setValue(10.0);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("ON").formatted(Formatting.GREEN));
+            previousGamma = options.gamma;
+            options.gamma = 10.0;
+            message = new LiteralText("Full Brightness ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)).append(new LiteralText("ON").setStyle(Style.EMPTY.withColor(Formatting.GREEN)));
         } else {
-            gammaOption.setValue(previousGamma);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("OFF").formatted(Formatting.RED));
+            options.gamma = previousGamma;
+
+            message = new LiteralText("Full Brightness ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)).append(new LiteralText("OFF").setStyle(Style.EMPTY.withColor(Formatting.RED)));
         }
 
         client.inGameHud.setOverlayMessage(message, false);
