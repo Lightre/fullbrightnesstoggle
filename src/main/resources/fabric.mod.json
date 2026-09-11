@@ -11,7 +11,7 @@
     "sources": "https://github.com/Lightre/fullbrightnesstoggle",
     "issues": "https://github.com/Lightre/fullbrightnesstoggle/issues"
   },
-  "license": "ARR",
+  "license": "CC BY-NC-SA 4.0",
   "icon": "assets/fullbrightnesstoggle/icon.png",
   "environment": "client",
   "entrypoints": {
