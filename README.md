@@ -36,7 +36,7 @@ Hit the key (default: G) and boom, everything’s bright. Hit it again and chill
 
 ## License
 
-This project is licensed under the [All Rights Reserved license][hey_license_url].
+This project is licensed under the [CC BY-NC-SA 4.0 license][hey_license_url].
 
 [downloads_img]: https://img.shields.io/modrinth/dt/fullbrightnesstoggle?color=default&logo=modrinth
 
@@ -44,7 +44,7 @@ This project is licensed under the [All Rights Reserved license][hey_license_url
 
 [releases_url]: https://github.com/Lightre/fullbrightnesstoggle/releases/latest
 
-[hey_license_img]: https://img.shields.io/badge/license-ARR-yellow.svg
+[hey_license_img]: https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg
 
 [hey_license_url]: https://github.com/Lightre/fullbrightnesstoggle/blob/main/LICENSE
 
