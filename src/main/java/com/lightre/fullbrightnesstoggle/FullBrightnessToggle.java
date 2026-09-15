@@ -2,38 +2,39 @@ package com.lightre.fullbrightnesstoggle;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.SimpleOption;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.Options;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 public class FullBrightnessToggle implements ClientModInitializer {
 
-    private static KeyBinding toggleKey;
+    private static KeyMapping toggleKey;
     private static boolean isFullBright = false;
     private static double previousGamma = 1.0;
 
     @Override
     public void onInitializeClient() {
-        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.fullbright.toggle", GLFW.GLFW_KEY_G, KeyBinding.Category.create(Identifier.of("fullbrightnesstoggle", "fullbright"))));
+        toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.fullbright.toggle", GLFW.GLFW_KEY_G, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("fullbrightnesstoggle", "main"))));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             checkGammaAndToggleState(client.options);
 
-            while (toggleKey.wasPressed()) {
+            while (toggleKey.consumeClick()) {
                 toggleBrightness(client.options, client);
             }
         });
     }
 
-    private void checkGammaAndToggleState(GameOptions options) {
-        SimpleOption<Double> gammaOption = options.getGamma();
-        double currentGamma = gammaOption.getValue();
+    private void checkGammaAndToggleState(Options options) {
+        OptionInstance<@NotNull Double> gammaOption = options.gamma();
+        double currentGamma = gammaOption.get();
         boolean gammaIsFull = currentGamma >= 10.0;
 
         if (gammaIsFull && !isFullBright) {
@@ -45,22 +46,25 @@ public class FullBrightnessToggle implements ClientModInitializer {
         }
     }
 
-    private void toggleBrightness(GameOptions options, net.minecraft.client.MinecraftClient client) {
-        SimpleOption<Double> gammaOption = options.getGamma();
+    private void toggleBrightness(Options options, Minecraft client) {
+        OptionInstance<@NotNull Double> gammaOption = options.gamma();
 
-        Text message;
+        Component message;
         if (!isFullBright) {
-            previousGamma = gammaOption.getValue();
-            gammaOption.setValue(10.0);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("ON").formatted(Formatting.GREEN));
+            previousGamma = gammaOption.get();
+            gammaOption.set(10.0);
+            message = Component.literal("Full Brightness ").withStyle(ChatFormatting.WHITE).append(Component.literal("ON").withStyle(ChatFormatting.GREEN));
         } else {
-            gammaOption.setValue(previousGamma);
-            message = Text.literal("Full Brightness ").formatted(Formatting.WHITE).append(Text.literal("OFF").formatted(Formatting.RED));
+            gammaOption.set(previousGamma);
+            message = Component.literal("Full Brightness ").withStyle(ChatFormatting.WHITE).append(Component.literal("OFF").withStyle(ChatFormatting.RED));
         }
 
-        client.inGameHud.setOverlayMessage(message, false);
+        if (client.player != null) {
+            client.gui.setOverlayMessage(message, false);
+        }
+
         isFullBright = !isFullBright;
 
-        client.options.write();
+        client.options.save();
     }
 }
