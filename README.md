@@ -48,4 +48,4 @@ This project is licensed under the [CC BY-NC-SA 4.0 license][hey_license_url].
 
 [hey_license_url]: https://github.com/Lightre/fullbrightnesstoggle/blob/main/LICENSE
 
-[minecraft_version_img]: https://img.shields.io/badge/minecraft-1.21x%201.20x%201.19x%201.18x-%231bc481
+[minecraft_version_img]: https://img.shields.io/badge/minecraft-26.1%201.21x%201.20x%201.19x%201.18x-%231bc481
