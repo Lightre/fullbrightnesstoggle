@@ -2,7 +2,7 @@ package com.lightre.fullbrightnesstoggle.mixin;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.client.option.SimpleOption;
+import net.minecraft.client.OptionInstance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-@Mixin(SimpleOption.DoubleSliderCallbacks.class)
+@Mixin(OptionInstance.UnitDouble.class)
 public class GammaValidationMixin {
     @Unique
     private static final Logger LOGGER = LogManager.getLogger("FullBrightnessToggle");
 
-    @Inject(method = "validate(Ljava/lang/Double;)Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "validateValue(Ljava/lang/Double;)Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)
     private void alwaysValid(Double value, CallbackInfoReturnable<Optional<Double>> cir) {
         try {
             cir.setReturnValue(Optional.ofNullable(value));
