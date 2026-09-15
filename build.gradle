@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.17-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'maven-publish'
 }
 
@@ -24,19 +24,16 @@ if (mcVer != null) {
 
 versionProps.each { key, value -> project.ext[key.toString()] = value.toString() }
 
-version = project.mod_version
-group = project.maven_group
+project.version = project.mod_version
+project.group = project.maven_group
 
 repositories {
-    mavenCentral()
-    maven { url = "https://maven.fabricmc.net/" }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.ext.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.ext.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.ext.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.ext.fabric_version}"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 processResources {
@@ -51,7 +48,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 25
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = targetJavaVersion
@@ -64,20 +61,20 @@ java {
 }
 
 jar {
-    archiveFileName = "${project.archives_base_name}-fabric-${project.mod_version}+mc${project.ext.minecraft_version}-dev.jar"
-    from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}" }
-    }
-}
+    def projectName = project.findProperty("archives_base_name") ?: project.name
+    inputs.property "projectName", projectName
 
-remapJar {
-    archiveFileName = "${project.archives_base_name}-fabric-${project.mod_version}+mc${project.ext.minecraft_version}.jar"
+    archiveFileName = "${projectName}-fabric-${project.mod_version}+mc${project.minecraft_version}.jar"
+
+    from("LICENSE") {
+        rename { "${it}_${projectName}" }
+    }
 }
 
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
+            artifactId = project.findProperty("archives_base_name") ?: project.name
             from components.java
         }
     }
