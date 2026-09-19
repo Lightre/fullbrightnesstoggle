@@ -11,7 +11,7 @@ import net.minecraft.client.Options;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class FullBrightnessToggle implements ClientModInitializer {
 
@@ -21,7 +21,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.fullbright.toggle", GLFW.GLFW_KEY_G, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("fullbrightnesstoggle", "main"))));
+        toggleKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.fullbright.toggle", InputConstants.KEY_G, KeyMapping.Category.register(Identifier.fromNamespaceAndPath("fullbrightnesstoggle", "main"))));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             checkGammaAndToggleState(client.options);
