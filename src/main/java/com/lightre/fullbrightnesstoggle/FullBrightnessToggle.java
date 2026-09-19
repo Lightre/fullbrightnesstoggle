@@ -60,7 +60,7 @@ public class FullBrightnessToggle implements ClientModInitializer {
         }
 
         if (client.player != null) {
-            client.gui.setOverlayMessage(message, false);
+            client.gui.hud.setOverlayMessage(message, false);
         }
 
         isFullBright = !isFullBright;
