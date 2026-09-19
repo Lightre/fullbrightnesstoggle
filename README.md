@@ -6,7 +6,7 @@
 
 <a name="readme-top"></a>
 
-# Full Brightness Toggle for 26.1 - 26.1.2
+# Full Brightness Toggle for 26.1 – 26.1.2
 
 A tiny **Fabric** mod that makes your Minecraft ***hella bright*** whenever you feel like it.
 
