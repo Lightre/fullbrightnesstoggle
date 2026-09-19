@@ -6,7 +6,7 @@
 
 <a name="readme-top"></a>
 
-# Full Brightness Toggle
+# Full Brightness Toggle for 1.20 – 1.20.6
 
 A tiny **Fabric** mod that makes your Minecraft ***hella bright*** whenever you feel like it.
 
@@ -48,4 +48,4 @@ This project is licensed under the [CC BY-NC-SA 4.0 license][hey_license_url].
 
 [hey_license_url]: https://github.com/Lightre/fullbrightnesstoggle/blob/main/LICENSE
 
-[minecraft_version_img]: https://img.shields.io/badge/minecraft-1.21x%201.20x%201.19x%201.18x-%231bc481
+[minecraft_version_img]: https://img.shields.io/badge/minecraft-1.20.6%201.20.5%201.20.4%201.20.3%201.20.2%201.20.1%201.20-%231bc481
